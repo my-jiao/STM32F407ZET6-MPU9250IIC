@@ -1,0 +1,149 @@
+#include "key.h"
+
+
+struct keys key[4]= {0,0,0,0}; //四个按键的变量初始化
+
+void Key_Scan(void)
+{
+    //读取四个按键的状态
+    key[0].key_sta = HAL_GPIO_ReadPin(GPIOB,GPIO_PIN_0);
+    key[1].key_sta = HAL_GPIO_ReadPin(GPIOB,GPIO_PIN_1);
+    key[2].key_sta = HAL_GPIO_ReadPin(GPIOB,GPIO_PIN_2);
+    key[3].key_sta = HAL_GPIO_ReadPin(GPIOA,GPIO_PIN_0);
+
+    for(int i = 0; i < 4; i ++) //扫描按键 每0.1秒
+    {
+        switch(key[i].judge_sta)//四个步骤
+        {
+        case 0:
+        {
+            if(key[i].key_sta == 0)//如果按键状态位低电平，有可能是抖动引起的也有可能是按下的
+            {
+                key[i].judge_sta = 1;
+                key[i].key_time = 0;
+            }
+        }
+        break;
+        case 1:
+        {
+            if(key[i].key_sta == 0)//如果按键状态还是低电平，则为按下的
+            {
+                key[i].judge_sta = 2;
+            }
+            else
+            {
+                key[i].judge_sta = 0;
+            }
+        }
+        break;
+        case 2:
+        {
+            if(key[i].key_sta == 1)
+            {
+                key[i].judge_sta = 0;
+                if(key[i].key_time <= 70)
+                {
+                    key[i].single_flag = 1;//单击
+                }
+            }
+            else
+            {
+                key[i].key_time ++;
+                if(key[i].key_time >= 70)
+                {
+                    key[i].long_flag = 1;
+                }
+            }
+        }
+        break;
+        }
+    }
+}
+
+
+
+uint8_t KeyNum;
+uint8_t Key_GetNum(void)
+{
+    uint8_t KeyNum = 0;//定义变量，默认键码值为0
+/****************单击*****************/
+    if(key[0].single_flag == 1)
+    {
+        KeyNum = 1;
+        key[0].single_flag = 0;
+
+    }
+    if(key[1].single_flag == 1)
+    {
+        KeyNum = 2;
+        key[1].single_flag = 0;
+
+    }
+    if(key[2].single_flag == 1)
+    {
+        KeyNum = 3;
+        key[2].single_flag = 0;
+
+    }
+    if(key[3].single_flag == 1)
+    {
+        KeyNum = 4;
+        key[3].single_flag = 0;
+    }
+/****************长按*****************/
+    if(key[0].long_flag == 1)
+    {
+        KeyNum = 5;
+        key[0].long_flag = 0;
+    }
+    if(key[1].long_flag == 1)
+    {
+        KeyNum = 6;
+        key[1].long_flag = 0;
+    }
+    if(key[2].long_flag == 1)
+    {
+        KeyNum = 7;
+        key[2].long_flag = 0;
+    }
+    if(key[3].long_flag == 1)
+    {
+        KeyNum = 8;
+        key[3].long_flag = 0;
+    }
+    
+    return KeyNum;
+}
+//uint8_t Key_GetNum(void)
+//{
+//    uint8_t KeyNum = 0;//定义变量，默认键码值为0
+//    if(HAL_GPIO_ReadPin(GPIOC,GPIO_PIN_9) == GPIO_PIN_RESET)//上拉输入
+//    {
+//        HAL_Delay(10);                                               //延时消抖
+//        while(HAL_GPIO_ReadPin(GPIOC,GPIO_PIN_9) == GPIO_PIN_RESET); //等待按键松手
+//        HAL_Delay(10);                                               //延时消抖
+//        KeyNum = 1;                                                  //置键码为1
+//    }
+//    if(HAL_GPIO_ReadPin(GPIOC,GPIO_PIN_8) == GPIO_PIN_RESET)
+//    {
+//        HAL_Delay(10);
+//        while(HAL_GPIO_ReadPin(GPIOC,GPIO_PIN_8) == GPIO_PIN_RESET);
+//        HAL_Delay(10);
+//        KeyNum = 2;
+//    }
+//    if(HAL_GPIO_ReadPin(GPIOC,GPIO_PIN_7) == GPIO_PIN_RESET)//上拉输入
+//    {
+//        HAL_Delay(10);                                               //延时消抖
+//        while(HAL_GPIO_ReadPin(GPIOC,GPIO_PIN_7) == GPIO_PIN_RESET); //等待按键松手
+//        HAL_Delay(10);                                               //延时消抖
+//        KeyNum = 3;                                                  //置键码为1
+//    }
+//    if(HAL_GPIO_ReadPin(GPIOC,GPIO_PIN_6) == GPIO_PIN_RESET)
+//    {
+//        HAL_Delay(10);
+//        while(HAL_GPIO_ReadPin(GPIOC,GPIO_PIN_6) == GPIO_PIN_RESET);
+//        HAL_Delay(10);
+//        KeyNum = 4;
+//    }
+//    return KeyNum;
+//}

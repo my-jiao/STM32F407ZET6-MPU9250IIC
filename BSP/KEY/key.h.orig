@@ -1,0 +1,19 @@
+#ifndef __KEY_H
+#define __KEY_H
+
+#include "main.h"
+//uint8_t Scan_Key(void);
+//uint8_t Key_GetNum(void);
+
+//extern uint8_t KeyNum;
+
+struct keys
+{
+	uchar judge_sta;//按键的步骤
+	bool key_sta;//按键的状态
+	bool single_flag;//按下的类型  单击
+	bool long_flag;//按下的类型  长按
+	uint key_time;//按下的时间
+
+};
+#endif
